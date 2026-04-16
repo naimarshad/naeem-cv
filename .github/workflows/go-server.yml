@@ -1,0 +1,27 @@
+name: Go server on self-hosted runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-server:
+    runs-on: ubuntu-latest
+    # runs-on: [self-hosted, linux, go]   # must match your runner labels
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      - name: Build
+        run: go build -o server ./go-server/main.go
+
+      - name: Run server (10s demo)
+        run: |
+          ./server &
+          sleep 2
+          curl -v http://127.0.0.1:8080/
+          sleep 8

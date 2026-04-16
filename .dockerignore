@@ -1,0 +1,11 @@
+.next/
+out/
+node_modules/
+.pnpm-store/
+.git/
+.gitignore
+.dockerignore
+.devcontainer/
+*.md
+*.log
+.env*

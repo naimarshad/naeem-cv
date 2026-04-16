@@ -1,0 +1,8 @@
+services:
+  naeem-cv:
+    build:
+      context: /home/naeem/projects/naeem-cv
+      dockerfile: /home/naeem/projects/naeem-cv/.devcontainer/Containerfile
+    container_name: naeem-cv
+    ports:
+      - "80:80"
