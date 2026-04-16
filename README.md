@@ -1,44 +1,69 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 # naeem-cv
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+Personal portfolio and CV site for Naeem Arshad, a Senior DevOps / Platform Engineer based in Norderstedt, Germany.
 
-First, run the development server:
+Built as a single-page static site with a terminal/infrastructure aesthetic. Deployed on a self-hosted k0s cluster behind Cloudflare Tunnel at [cv.linuxtechinfo.com](https://cv.linuxtechinfo.com).
+
+**Stack:** Next.js 15 (App Router, static export) · TypeScript · Tailwind CSS v4 · Framer Motion · Catppuccin Mocha theme
+
+---
+
+## Development
+
+The dev environment runs inside a Podman-managed container. All `pnpm` commands must be run inside the container.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Start the devcontainer
+podman compose -f .devcontainer/compose.dev.yaml up -d
+
+# Enter the container
+podman exec -it naeem-cv-dev bash
+
+# Inside the container
+pnpm dev        # dev server → http://localhost:3000
+pnpm build      # production build (static export to out/)
+pnpm lint       # ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Node modules live in a named Podman volume. Source files are bind-mounted from the host, so you can edit in any host editor (e.g. Zed) with live reload.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Editing Content
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All site text lives in a single file — no JSX edits needed:
 
-## Learn More
+```
+src/data/content.ts
+```
 
-To learn more about Next.js, take a look at the following resources:
+Edit the exported `content` object to update any section: hero, about, skills, experience, projects, or contact.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Production Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Multi-stage Containerfile: `node:22-alpine` builds the static export, `nginx:alpine` serves it.
 
-## Deploy on Vercel
+```bash
+# Build the image
+podman build -t naeem-cv:latest -f Containerfile .
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Test locally
+podman run --rm -p 8080:80 naeem-cv:latest
+# → http://localhost:8080
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 667cdd7c (Initial commit from Create Next App)
-=======
-# projects
->>>>>>> af4a3d35 (inital commit)
+# Tag by git SHA for deployment
+podman build -t naeem-cv:$(git rev-parse --short HEAD) -f Containerfile .
+```
+
+## Deployment
+
+```
+out/  →  nginx:alpine container
+      →  k0s on selfhost01 (192.168.1.4)
+      →  Cloudflare Tunnel
+      →  cv.linuxtechinfo.com
+```
+
+Transfer to the cluster if no registry is in place:
+
+```bash
+podman save naeem-cv:latest | ssh selfhost01 podman load
+```
