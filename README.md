@@ -53,17 +53,3 @@ podman run --rm -p 8080:80 naeem-cv:latest
 podman build -t naeem-cv:$(git rev-parse --short HEAD) -f Containerfile .
 ```
 
-## Deployment
-
-```
-out/  →  nginx:alpine container
-      →  k0s on selfhost01 (192.168.1.4)
-      →  Cloudflare Tunnel
-      →  cv.linuxtechinfo.com
-```
-
-Transfer to the cluster if no registry is in place:
-
-```bash
-podman save naeem-cv:latest | ssh selfhost01 podman load
-```
